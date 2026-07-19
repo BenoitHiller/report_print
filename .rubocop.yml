@@ -226,3 +226,5 @@ Layout/MultilineOperationIndentation:
 
 RSpec/MultipleExpectations:
   Enabled: false
+RSpec/ExampleLength:
+  Enabled: false

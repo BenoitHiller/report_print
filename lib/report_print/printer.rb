@@ -1,22 +1,22 @@
 require "rainbow"
 
 module ReportPrint
-  State = Data.define(
-    :mode,
-    :indent,
-    :separator,
-    :inline_separator,
-    :next_inline_separator,
-    :after,
-    :start_of_line,
-    :start_of_block
-  ) do
-    def inline?
-      mode == :inline
-    end
-  end
-
   class Printer
+    State = Data.define(
+      :mode,
+      :indent,
+      :separator,
+      :inline_separator,
+      :next_inline_separator,
+      :after,
+      :start_of_line,
+      :start_of_block
+    ) do
+      def inline?
+        mode == :inline
+      end
+    end
+
     def initialize(output = $>, color: :auto)
       @output = output
       if color == :auto
@@ -43,20 +43,6 @@ module ReportPrint
         object.report_print
       else
         write("BasicObject", color: :bright_yellow)
-      end
-    end
-
-    def write_instance_variables(object, variables = :all)
-      if variables == :all
-        variables = object.instance_variables
-      end
-
-      variables.each do |name|
-        inline(" ") do
-          write(name, color: :bright_cyan)
-          write("=")
-          rp(object.instance_variable_get(name))
-        end
       end
     end
 
@@ -134,8 +120,14 @@ module ReportPrint
         end
       end
 
-      if did_write && @state.inline?
-        set_state(next_inline_separator: @state.inline_separator)
+      if did_write
+        if @state.inline?
+          set_state(next_inline_separator: @state.inline_separator)
+        else
+          # This is to cleanup the special case handling of the outermost state.
+          # Likely this would be more clear with an explicit flag.
+          set_state(start_of_line: true)
+        end
       end
     end
 
@@ -165,7 +157,8 @@ module ReportPrint
         )
       else
         set_state(
-          start_of_block: false
+          start_of_block: false,
+          start_of_line: true
         )
       end
     end
@@ -183,6 +176,20 @@ module ReportPrint
       write(sprintf("%#x", object.__id__), color: :bright_black)
     end
 
+    def write_instance_variables(object, variables = :all)
+      if variables == :all
+        variables = object.instance_variables
+      end
+
+      variables.each do |name|
+        inline(" ") do
+          write(name, color: :bright_cyan)
+          write("=")
+          rp(object.instance_variable_get(name))
+        end
+      end
+    end
+
     def unless_seen(object)
       if @seen.include?(object.__id__)
         write_header(object)
@@ -192,12 +199,12 @@ module ReportPrint
       end
     end
 
+    private
+
     def break_line
       @output.write("\n")
       @output.write(" " * @state.indent)
     end
-
-    private
 
     def with_state(**kwargs)
       previous = @state
