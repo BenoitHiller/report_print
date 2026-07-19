@@ -1,29 +1,12 @@
 require "rainbow"
 
 module ReportPrint
-  module RainbowRefinements
-    refine Rainbow::Presenter do
-      def color(*values)
-        case values
-        in [Symbol => name]
-          if (matches = name.match(/bright_(\w+)/))
-            super(matches[1].to_sym).bright
-          else
-            super
-          end
-        else
-          super
-        end
-      end
-    end
-  end
-  using RainbowRefinements
-
   State = Data.define(
     :mode,
     :indent,
     :separator,
     :inline_separator,
+    :next_inline_separator,
     :after,
     :start_of_line,
     :start_of_block
@@ -36,12 +19,10 @@ module ReportPrint
   class Printer
     def initialize(output = $>, color: :auto)
       @output = output
-      @rainbow = Rainbow.new
       if color == :auto
-        @rainbow.enabled = output.respond_to?(:tty?) && output.tty?
-      else
-        @rainbow.enabled = color
+        color = output.respond_to?(:tty?) && output.tty?
       end
+      @rainbow = Rainbow::Wrapper.new(color)
 
       @seen = ::Set.new
       @state = State[
@@ -49,6 +30,7 @@ module ReportPrint
         indent: 0,
         separator: "",
         inline_separator: "",
+        next_inline_separator: nil,
         after: nil,
         start_of_line: false,
         start_of_block: true
@@ -60,37 +42,39 @@ module ReportPrint
       when Object
         object.report_print
       else
-        write("BasicObject")
+        write("BasicObject", color: :bright_yellow)
       end
     end
 
-    def write_object(object, variables = :all)
-      unless_seen(object) do
-        if variables == :all
-          variables = object.instance_variables
-        end
-        write_header(object)
-        multiline(after: Rainbow("end").blue.bright, after_empty: false) do
-          variables.each do |name|
-            inline(" ") do
-              write(name, color: :bright_cyan)
-              write("=")
-              rp(object.instance_variable_get(name))
-            end
-          end
+    def write_instance_variables(object, variables = :all)
+      if variables == :all
+        variables = object.instance_variables
+      end
 
-          if block_given?
-            yield
-          end
+      variables.each do |name|
+        inline(" ") do
+          write(name, color: :bright_cyan)
+          write("=")
+          rp(object.instance_variable_get(name))
         end
       end
     end
 
-    # rubocop:disable Naming/MethodName
-    def Rainbow(string)
-      @rainbow.wrap(string.to_s)
+    def color(input, *values)
+      wrapped = @rainbow.wrap(input.to_s)
+      case values
+      in [Symbol => name]
+        if (matches = name.match(/bright_(\w+)/))
+          wrapped.color(matches[1].to_sym).bright
+        else
+          wrapped.color(name)
+        end
+      in []
+        wrapped
+      else
+        wrapped.color(*values)
+      end
     end
-    # rubocop:enable Naming/MethodName
 
     def inline(inline_separator = :inherit, &block)
       if inline_separator == :inherit
@@ -102,6 +86,11 @@ module ReportPrint
           start_of_line: @state.start_of_line && result.start_of_line,
           start_of_block: @state.start_of_block && result.start_of_block
         )
+        if @state.next_inline_separator != result.next_inline_separator
+          # If the inner inline state is requesting a separator, then that
+          # means we should request the current separator instead.
+          set_state(next_inline_separator: @state.inline_separator)
+        end
       else
         set_state(
           start_of_block: @state.start_of_block && result.start_of_block
@@ -125,6 +114,7 @@ module ReportPrint
         start_of_line: true,
         start_of_block: true,
         indent: @state.indent + indent,
+        next_inline_separator: nil,
         separator:,
         &block
       )
@@ -133,12 +123,19 @@ module ReportPrint
         start_of_block: @state.start_of_block && result.start_of_block
       )
 
-      if !result.start_of_block || after_empty
+      did_write = !result.start_of_block
+
+      if did_write || after_empty
         unless after.nil?
           multiline(indent: 0) do
             write(after)
           end
+          did_write = true
         end
+      end
+
+      if did_write && @state.inline?
+        set_state(next_inline_separator: @state.inline_separator)
       end
     end
 
@@ -148,13 +145,13 @@ module ReportPrint
           @output.write(@state.separator)
         end
         break_line
-      else
-        @output.write(@state.inline_separator)
+      elsif @state.next_inline_separator
+        @output.write(@state.next_inline_separator)
       end
 
       if color
         strings = strings.map do |string|
-          Rainbow(string).color(color)
+          self.color(string, *Array(color))
         end
       end
 
@@ -163,7 +160,8 @@ module ReportPrint
       if @state.inline?
         set_state(
           start_of_line: false,
-          start_of_block: false
+          start_of_block: false,
+          next_inline_separator: @state.inline_separator
         )
       else
         set_state(
@@ -173,12 +171,10 @@ module ReportPrint
     end
 
     def write_header(object, write_id: true)
-      inline do
+      inline(" ") do
         write(object.class.short_class_name, color: :bright_yellow)
         if write_id
-          inline(" ") do
-            write_object_id(object)
-          end
+          write_object_id(object)
         end
       end
     end

@@ -16,7 +16,12 @@ class Object < BasicObject
   end
 
   def report_print
-    rp.write_object(self)
+    rp.unless_seen(self) do
+      rp.write_header(self)
+      rp.multiline(after: rp.color("end", :bright_blue), after_empty: false) do
+        rp.write_instance_variables(self)
+      end
+    end
   end
 end
 
@@ -88,7 +93,10 @@ end
 
 class Set < Object
   def report_print
-    rp.write(rp.Rainbow("Set").yellow, "[")
+    rp.inline("") do
+      rp.write("Set", color: :yellow)
+      rp.write("[")
+    end
     rp.multiline(after: "]", separator: ",") do
       to_a.each do |item|
         rp(item)
@@ -100,11 +108,14 @@ end
 class Data < Object
   def report_print
     name = self.class.short_class_name
-    rp.write(rp.Rainbow(name).blue, "[")
+    rp.inline("") do
+      rp.write(name, color: :blue)
+      rp.write("[")
+    end
     rp.multiline(after: "]", separator: ",") do
       self.to_h.each do |name, value|
-        rp.inline("") do
-          rp.write(name, ": ", color: :bright_cyan)
+        rp.inline(": ") do
+          rp.write(name, color: :bright_cyan)
           rp(value)
         end
       end
@@ -115,16 +126,17 @@ end
 class Struct < Object
   def report_print
     name = self.class.short_class_name
-    rp.inline do
-      rp.write(rp.Rainbow(name).yellow.bright, "(")
-      rp.inline(" ") do
-        rp.write_object_id(self)
+    rp.inline(" ") do
+      rp.inline("") do
+        rp.write(name, color: :bright_yellow)
+        rp.write("(")
       end
+      rp.write_object_id(self)
     end
     rp.multiline(after: ")", separator: ",") do
       self.to_h.each do |name, value|
-        rp.inline("") do
-          rp.write(name, ": ", color: :bright_cyan)
+        rp.inline(": ") do
+          rp.write(name, color: :bright_cyan)
           rp(value)
         end
       end
