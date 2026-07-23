@@ -1,4 +1,5 @@
 require "report_print"
+require "rainbow/refinement"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

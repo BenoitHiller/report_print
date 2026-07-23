@@ -1,4 +1,3 @@
-require "rainbow/refinement"
 using Rainbow
 
 class Example1
