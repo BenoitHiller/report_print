@@ -40,7 +40,7 @@ module ReportPrint
     def rp(object)
       case object
       when Object
-        object.report_print
+        object.report_print(self)
       else
         write("BasicObject", color: :bright_yellow)
       end

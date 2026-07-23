@@ -7,53 +7,35 @@ class Example1
 end
 
 RSpec.describe ReportPrint::Printer do
-  subject(:printer) { described_class.new(output, color: false) }
-
-  let(:output) { StringIO.new }
-
-  def printer_block
-    Fiber.new do
-      Fiber[:report_printer] = printer
-      yield
-      output.write("\n")
-    end.resume
-  end
-
   it "writes strings" do
-    printer_block do
-      rp.write("test string")
-    end
-    expect(output.string).to eq("test string\n")
+    rp.write("test string")
+    expect(output.string).to eq("test string")
   end
 
   it "joins inline strings" do
-    printer_block do
-      rp.inline("-") do
-        rp.write("one")
-        rp.inline("+") do
-          rp.write("two")
-          rp.write("three")
-        end
+    rp.inline("-") do
+      rp.write("one")
+      rp.inline("+") do
+        rp.write("two")
+        rp.write("three")
       end
     end
-    expect(output.string).to eq("one-two+three\n")
+    expect(output.string).to eq("one-two+three")
   end
 
   it "joins multiline strings" do
-    printer_block do
-      rp.write("one")
-      rp.write("two")
-      rp.multiline(separator: ",") do
-        rp.write("three")
-        rp.write("four")
-        rp.multiline do
-          rp.write("five")
-          rp.write("six")
-        end
+    rp.write("one")
+    rp.write("two")
+    rp.multiline(separator: ",") do
+      rp.write("three")
+      rp.write("four")
+      rp.multiline do
+        rp.write("five")
+        rp.write("six")
       end
     end
 
-    expect(output.string).to eq(<<~EXAMPLE.lstrip)
+    expect(output.string).to eq(<<~EXAMPLE.strip)
       one
       two
         three,
@@ -64,23 +46,21 @@ RSpec.describe ReportPrint::Printer do
   end
 
   it "interleaves join types" do
-    printer_block do
-      rp.inline("+") do
-        rp.write("one")
-        rp.write("[")
-        rp.multiline(separator: ",", after: "]") do
-          rp.write("two")
-          rp.inline("-") do
-            rp.write("three")
-            rp.write("four")
-          end
-          rp.write("five")
+    rp.inline("+") do
+      rp.write("one")
+      rp.write("[")
+      rp.multiline(separator: ",", after: "]") do
+        rp.write("two")
+        rp.inline("-") do
+          rp.write("three")
+          rp.write("four")
         end
-        rp.write("six")
+        rp.write("five")
       end
+      rp.write("six")
     end
 
-    expect(output.string).to eq(<<~EXAMPLE.lstrip)
+    expect(output.string).to eq(<<~EXAMPLE.strip)
       one+[
         two,
         three-four,
@@ -90,47 +70,42 @@ RSpec.describe ReportPrint::Printer do
   end
 
   it "closes empty blocks" do
-    printer_block do
-      rp.inline("+") do
-        rp.write("one")
-        rp.write("[")
-        rp.multiline(separator: ",", after: "]") { }
-        rp.write("two")
-      end
+    rp.inline("+") do
+      rp.write("one")
+      rp.write("[")
+      rp.multiline(separator: ",", after: "]") { }
+      rp.write("two")
     end
+
     # TODO: there should be a setting controlling whether it produces that extra newline
-    expect(output.string).to eq("one+[\n]+two\n")
+    expect(output.string).to eq("one+[\n]+two")
   end
 
   it "allows skipping closing empty blocks" do
-    printer_block do
-      rp.inline("+") do
-        rp.write("one")
-        rp.write("[")
-        rp.multiline(separator: ",", after: "]", after_empty: false) { }
-        rp.write("two")
-      end
+    rp.inline("+") do
+      rp.write("one")
+      rp.write("[")
+      rp.multiline(separator: ",", after: "]", after_empty: false) { }
+      rp.write("two")
     end
-    expect(output.string).to eq("one+[+two\n")
+    expect(output.string).to eq("one+[+two")
   end
 
   it "hides repeated items" do
     object = Example1.new
 
-    printer_block do
-      2.times do
-        rp.unless_seen(object) do
-          rp.write_header(object)
-          rp.multiline(after: "end") do
-            rp.write_instance_variables(object)
-          end
+    2.times do
+      rp.unless_seen(object) do
+        rp.write_header(object)
+        rp.multiline(after: "end") do
+          rp.write_instance_variables(object)
         end
       end
     end
 
     id = sprintf("%#x", object.__id__)
 
-    expect(output.string).to eq(<<~EXAMPLE.lstrip)
+    expect(output.string).to eq(<<~EXAMPLE.strip)
       Example1 #{id}
         @test = 1
       end
@@ -138,72 +113,54 @@ RSpec.describe ReportPrint::Printer do
     EXAMPLE
   end
 
-  context "with color" do
-    subject(:printer) { described_class.new(output, color: true) }
-
-    let(:rainbow) { Rainbow::Wrapper.new(true) }
-
+  context "with color", :color do
     it "writes using the color argument" do
-      printer_block do
-        rp.write("test string", color: :red)
-      end
-      expect(output.string).to eq("test string".red + "\n")
+      rp.write("test string", color: :red)
+      expect(output.string).to eq("test string".red)
     end
 
     it "accepts bright prefixed colors" do
-      printer_block do
-        rp.write("test string", color: :bright_red)
-      end
-      expect(output.string).to eq("test string".red.bright + "\n")
+      rp.write("test string", color: :bright_red)
+      expect(output.string).to eq("test string".red.bright)
     end
 
     it "provides access to a rainbow wrapper" do
-      printer_block do
-        rp.write(
-          rp.color("test string", :bright_blue),
-          rp.color("more", :aqua).underline
-        )
-      end
+      rp.write(
+        rp.color("test string", :bright_blue),
+        rp.color("more", :aqua).underline
+      )
       expect(output.string).to eq(
         "test string".blue.bright +
-        "more".color(:aqua).underline +
-        "\n"
+        "more".color(:aqua).underline
       )
     end
 
     it "writes headers" do
       object = Example1.new
-      printer_block do
-        rp.write_header(object)
-      end
+      rp.write_header(object)
 
       expect(output.string).to eq(
         "Example1".yellow.bright +
         " " +
-        sprintf("%#x", object.__id__).black.bright +
-        "\n"
+        sprintf("%#x", object.__id__).black.bright
       )
     end
 
     it "writes object ids" do
       object = Example1.new
-      printer_block do
-        rp.write_object_id(object)
-      end
+      rp.write_object_id(object)
 
       expect(output.string).to eq(
-        sprintf("%#x", object.__id__).black.bright + "\n"
+        sprintf("%#x", object.__id__).black.bright
       )
     end
 
     it "writes instance variables" do
       object = Example1.new
-      printer_block do
-        rp.write_instance_variables(object)
-      end
+      rp.write_instance_variables(object)
 
       expect(output.string).to eq(
-        "@test".cyan.bright + " = " + "1".magenta.bright + "\n"
+        "@test".cyan.bright + " = " + "1".magenta.bright
       )
     end
   end
