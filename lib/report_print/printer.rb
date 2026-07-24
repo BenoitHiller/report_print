@@ -2,7 +2,7 @@ require "rainbow"
 
 module ReportPrint
   class Printer
-    State = Data.define(
+    State = Data.define( # :nodoc:
       :mode,
       :indent,
       :separator,
