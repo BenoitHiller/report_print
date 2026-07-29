@@ -1,10 +1,10 @@
 require_relative "report_print/version"
+require_relative "report_print/refinements"
 require_relative "report_print/printer"
 require_relative "report_print/core_extensions"
+require_relative "report_print/dsl"
 
-module ReportPrint
-  class Error < StandardError; end
-  # Your code goes here...
-end
+module ReportPrint; end
 
-include ReportPrint::CoreExtensions
+# :enddoc:
+Kernel.prepend(ReportPrint::Dsl)

@@ -40,7 +40,7 @@ RSpec.describe ReportPrint::Printer do
       two
         three,
         four
-          five,
+          five
           six
       EXAMPLE
   end
@@ -77,8 +77,7 @@ RSpec.describe ReportPrint::Printer do
       rp.write("two")
     end
 
-    # TODO: there should be a setting controlling whether it produces that extra newline
-    expect(output.string).to eq("one+[\n]+two")
+    expect(output.string).to eq("one+[]+two")
   end
 
   it "allows skipping closing empty blocks" do

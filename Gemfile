@@ -17,3 +17,6 @@ gem "rubocop-rake", "~> 0.7.1"
 gem "pry", "~> 0.16.0"
 
 gem "rainbow", "~> 3.1"
+
+
+gem "rdoc", "~> 8.0"
