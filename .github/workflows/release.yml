@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Create Release and Push to RubyGems.org
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: ruby
+
+      - name: Fetch Version
+        run: |
+          version=$(ruby -e 'require_relative "lib/report_print/version.rb"; puts ReportPrint::VERSION')
+          echo "GEM_VERSION=$version" >> $GITHUB_ENV
+
+      - name: Publish gem
+        uses: rubygems/release-gem@v1
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "pkg/*.gem"
+          generateReleaseNotes: true
+          skipIfReleaseExists: true
+          tag: ${{ env.GEM_VERSION }}
