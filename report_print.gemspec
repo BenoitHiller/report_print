@@ -6,7 +6,10 @@ Gem::Specification.new do |spec|
   spec.authors = ["Benoit Hiller"]
   spec.email = ["benoit.hiller@gmail.com"]
 
-  spec.summary = "A very verbose alternative to pretty_print"
+  spec.summary = "A hybrid between PrettyPrint and AwesomePrint/AmazingPrint"
+  spec.description = <<~DESCRIPTION
+    A hybrid between PrettyPrint and AwesomePrint/AmazingPrint. Providing you both a stylish readable default, and the ability to customize it as needed.
+  DESCRIPTION
   spec.homepage = "https://github.com/BenoitHiller/report_print"
   spec.required_ruby_version = ">= 3.2.0"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
@@ -19,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
       (f == gemspec) ||
-        f.start_with?(*%w[bin/ Gemfile .gitignore .rspec spec/ .rubocop.yml])
+        f.start_with?(*%w[bin/ Rakefile Gemfile . spec/])
     end
   end
   spec.require_paths = ["lib"]

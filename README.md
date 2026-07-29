@@ -9,13 +9,13 @@ The name ReportPrint comes from the desire to output detailed reports of the pro
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add report-print
+bundle add report_print
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-gem install report-print
+gem install report_print
 ```
 
 ## Usage
