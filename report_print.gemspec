@@ -5,6 +5,7 @@ Gem::Specification.new do |spec|
   spec.version = ReportPrint::VERSION
   spec.authors = ["Benoit Hiller"]
   spec.email = ["benoit.hiller@gmail.com"]
+  spec.licenses = ["MIT-0"]
 
   spec.summary = "A hybrid between PrettyPrint and AwesomePrint/AmazingPrint"
   spec.description = <<~DESCRIPTION
