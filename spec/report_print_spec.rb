@@ -152,7 +152,7 @@ RSpec.describe ReportPrint do
         #{"@one".cyan.bright} = #{"1".magenta.bright}
         #{"@two".cyan.bright} = [
           #{'"a"'.green.bright},
-          #{':"2"'.cyan.bright}
+          #{':"2"'.blue.bright}
         ]
         #{"@three".cyan.bright} = #{TestStruct.expected_name}( #{oid}
           #{"a".cyan.bright}: #{"3".magenta.bright},
@@ -165,7 +165,7 @@ RSpec.describe ReportPrint do
           #{"@one".cyan.bright} = #{"1".magenta.bright}
           #{"@two".cyan.bright} = [
             #{'"a"'.green.bright},
-            #{':"2"'.cyan.bright}
+            #{':"2"'.blue.bright}
           ]
           #{"@three".cyan.bright} = #{TestStruct.expected_name}( #{oid}
             #{"a".cyan.bright}: #{"3".magenta.bright},

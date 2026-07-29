@@ -18,7 +18,7 @@ class ::Module < ::Object
 end
 
 class ::Symbol < ::Object
-  report_print_inspect!(color: :bright_cyan)
+  report_print_inspect!(color: :bright_blue)
 end
 
 class ::TrueClass < ::Object
