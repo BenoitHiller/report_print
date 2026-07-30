@@ -13,7 +13,7 @@ end
 
 class ::Module < ::Object
   def report_print(rp)
-    rp.write(name.short_class_name)
+    rp.write(short_class_name, color: :bright_yellow)
   end
 end
 
