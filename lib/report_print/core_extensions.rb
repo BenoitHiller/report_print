@@ -96,8 +96,11 @@ class ::Data < ::Object
     end
     rp.multiline(after: "]", separator: ",") do
       self.to_h.each do |name, value|
-        rp.inline(": ") do
-          rp.write(name, color: :bright_cyan)
+        rp.inline(" ") do
+          rp.inline("") do
+            rp.write(name, color: :bright_cyan)
+            rp.write(":")
+          end
           rp.rp(value)
         end
       end

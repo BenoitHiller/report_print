@@ -6,5 +6,4 @@ require_relative "report_print/dsl"
 
 module ReportPrint; end
 
-# :enddoc:
 Kernel.prepend(ReportPrint::Dsl)

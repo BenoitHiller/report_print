@@ -1,3 +1,6 @@
-main_page: README.md
+main_page: overview.md
 markup: markdown
 op_dir: _site
+page_dir: doc
+exclude:
+  - "gem_description.rdoc"

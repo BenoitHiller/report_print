@@ -1,0 +1,9 @@
+A hybrid between PrettyPrint and AwesomePrint/AmazingPrint. Providing you both a stylish readable default, and the ability to customize it as needed.
+
+The name ReportPrint comes from the desire to output detailed reports of the program state at a given point in time, rather than merely inspecting an object.
+
+== Usage
+
+  require 'report_print'
+
+  rp object

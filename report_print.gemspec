@@ -8,9 +8,7 @@ Gem::Specification.new do |spec|
   spec.licenses = ["MIT-0"]
 
   spec.summary = "A hybrid between PrettyPrint and AwesomePrint/AmazingPrint"
-  spec.description = <<~DESCRIPTION
-    A hybrid between PrettyPrint and AwesomePrint/AmazingPrint. Providing you both a stylish readable default, and the ability to customize it as needed.
-  DESCRIPTION
+  spec.description = File.read(File.join(__dir__, "gem_description.rdoc"))
   spec.homepage = "https://github.com/BenoitHiller/report_print"
   spec.required_ruby_version = ">= 3.2.0"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
