@@ -320,27 +320,6 @@ module ReportPrint
 
     private
 
-    def write_after(value)
-      if @state.start_of_line
-        break_line
-      end
-
-      @output.write(value)
-
-      if @state.inline?
-        set_state(
-          start_of_line: false,
-          start_of_block: false,
-          next_inline_separator: @state.inline_separator
-        )
-      else
-        set_state(
-          start_of_block: false,
-          start_of_line: true
-        )
-      end
-    end
-
     def break_line
       @output.write("\n")
       @output.write(" " * @state.indent)
