@@ -1,9 +1,10 @@
-name: Public RDoc to GitHub Pages
+name: RDoc
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
 
 permissions:
   contents: read
