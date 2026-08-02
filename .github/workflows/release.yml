@@ -34,4 +34,4 @@ jobs:
           artifacts: "pkg/*.gem"
           generateReleaseNotes: true
           skipIfReleaseExists: true
-          tag: ${{ env.GEM_VERSION }}
+          tag: v${{ env.GEM_VERSION }}
