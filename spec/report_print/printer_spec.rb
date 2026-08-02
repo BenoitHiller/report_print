@@ -6,6 +6,8 @@ class Example1
   end
 end
 
+DataExample = Data.define(:one)
+
 RSpec.describe ReportPrint::Printer do
   it "writes strings" do
     rp.write("test string")
@@ -94,12 +96,7 @@ RSpec.describe ReportPrint::Printer do
     object = Example1.new
 
     2.times do
-      rp.unless_seen(object) do
-        rp.write_header(object)
-        rp.multiline(after: "end") do
-          rp.write_instance_variables(object)
-        end
-      end
+      rp.rp(object)
     end
 
     id = sprintf("%#x", object.__id__)
@@ -109,6 +106,21 @@ RSpec.describe ReportPrint::Printer do
         @test = 1
       end
       Example1 #{id}
+    EXAMPLE
+  end
+
+  it "respects the detect_cycles option" do
+    2.times do
+      rp.rp(DataExample[1])
+    end
+
+    expect(output.string).to eq(<<~EXAMPLE.strip)
+    DataExample[
+      one: 1
+    ]
+    DataExample[
+      one: 1
+    ]
     EXAMPLE
   end
 

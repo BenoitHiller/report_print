@@ -137,6 +137,36 @@ RSpec.describe ReportPrint do
     EXAMPLE
   end
 
+  it "inspects ranges" do
+    rp.rp(1..10)
+    rp.rp(..10)
+    rp.rp(1..)
+    rp.rp(1...10)
+    rp.rp("a".."z")
+
+    expect(output.string).to eq(<<~EXAMPLE.strip)
+    (1..10)
+    (..10)
+    (1..)
+    (1...10)
+    ("a".."z")
+    EXAMPLE
+  end
+
+  it "inspects arithmetic sequences" do
+    rp.rp((1..10).step(1))
+    rp.rp((..10).step(2))
+    rp.rp((1..).step(2))
+    rp.rp((1...10).step(2))
+
+    expect(output.string).to eq(<<~EXAMPLE.strip)
+    (1..10)
+    (..10).step(2)
+    (1..).step(2)
+    (1...10).step(2)
+    EXAMPLE
+  end
+
   context "with color", :color do
     it "inspects strings" do
       rp.rp("test string")
@@ -178,5 +208,10 @@ RSpec.describe ReportPrint do
       #{"end".blue.bright}
       EXAMPLE
     end
+  end
+
+  it "inspects regex" do
+    rp.rp(/a\sb/)
+    expect(output.string).to eq("/a\\sb/".yellow)
   end
 end

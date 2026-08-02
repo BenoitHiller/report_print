@@ -10,6 +10,7 @@ A number of simple value types are configured to produce colorized versions of t
 
     rp :symbols
     rp "strings"
+    rp /regex/
 
     # All Numeric types
     rp 1
@@ -27,7 +28,8 @@ Output:
 
 <pre>
 <span style="color:var(--code-blue)">:symbols<span style="color:var(--code-green)">
-"strings"<span style="color:var(--code-purple)">
+"strings"<span style="color:var(--code-orange)">
+/regex/<span style="color:var(--code-purple)">
 1
 0.5
 Infinity
@@ -165,3 +167,19 @@ Output:
 </pre>
 
 Note that the object id is included for `Struct` but not for `Data` as the latter is a flyweight while the former is essentially an ordinary class.
+
+## `Range` and `ArithmeticSequence`
+
+    rp(1..10)
+    rp(..10)
+    rp((1...10).step(2))
+    rp("a".."z")
+
+Output:
+
+<pre>
+(<span style="color:var(--code-purple)">1</span>..<span style="color:var(--code-purple)">10</span>)
+(..<span style="color:var(--code-purple)">10</span>)
+(<span style="color:var(--code-purple)">1</span>...<span style="color:var(--code-purple)">10</span>).step(<span style="color:var(--code-purple)">2</span>)
+(<span style="color:var(--code-green)">"a"</span>..<span style="color:var(--code-green)">"z"</span>)</span>
+</pre>

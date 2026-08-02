@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = "A hybrid between PrettyPrint and AwesomePrint/AmazingPrint"
   spec.description = File.read(File.join(__dir__, "gem_description.rdoc"))
-  spec.homepage = "https://github.com/BenoitHiller/report_print"
+  spec.homepage = "https://benoithiller.github.io/report_print/"
   spec.required_ruby_version = ">= 3.2.0"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage

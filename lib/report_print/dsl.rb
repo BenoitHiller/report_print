@@ -19,3 +19,5 @@ module ReportPrint
     end
   end
 end
+
+Kernel.prepend(ReportPrint::Dsl)

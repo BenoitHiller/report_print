@@ -13,16 +13,12 @@ module ReportPrint
       :next_inline_separator,
       :after,
       :start_of_line,
-      :start_of_block
+      :start_of_block,
+      :start_of_output
     ) do
-      # Ruby type checking can't really handle this type of dynamic programming
-      # very well yet, so we just skip type checking here as there is only the
-      # one short function.
-      # steep:ignore:start
       def inline?
         mode == :inline
       end
-      # steep:ignore:end
     end
 
     ##
@@ -32,10 +28,7 @@ module ReportPrint
     def initialize(output = $>, color: :auto)
       @output = output
       if color == :auto
-        # Ignore block performing runtime type check.
-        # steep:ignore:start
         color = output.respond_to?(:tty?) && output.tty?
-        # steep:ignore:end
       end
       @rainbow = Rainbow::Wrapper.new(color)
 
@@ -47,9 +40,12 @@ module ReportPrint
         inline_separator: "",
         next_inline_separator: nil,
         after: nil,
-        start_of_line: false,
-        start_of_block: true
+        start_of_line: true,
+        start_of_block: true,
+        start_of_output: true
       ]
+
+      @options = ScopedOptions.new(ReportPrint.report_print_options)
     end
 
     ##
@@ -60,7 +56,14 @@ module ReportPrint
     def rp(object)
       case object
       when Object
-        object.report_print(self)
+        if @seen.include?(object.__id__)
+          object.report_print_cycle(self)
+        else
+          if options_for(object)[:detect_cycles]
+            @seen.add(object.__id__)
+          end
+          object.report_print(self)
+        end
       else
         write("BasicObject", color: :bright_yellow)
       end
@@ -120,7 +123,8 @@ module ReportPrint
       if @state.inline?
         set_state(
           start_of_line: @state.start_of_line && result.start_of_line,
-          start_of_block: @state.start_of_block && result.start_of_block
+          start_of_block: @state.start_of_block && result.start_of_block,
+          start_of_output: @state.start_of_output && result.start_of_output
         )
         if @state.next_inline_separator != result.next_inline_separator
           # If the inner inline state is requesting a separator, then that
@@ -129,7 +133,8 @@ module ReportPrint
         end
       else
         set_state(
-          start_of_block: @state.start_of_block && result.start_of_block
+          start_of_block: @state.start_of_block && result.start_of_block,
+          start_of_output: @state.start_of_output && result.start_of_output
         )
       end
     end
@@ -167,7 +172,8 @@ module ReportPrint
       )
 
       set_state(
-        start_of_block: @state.start_of_block && result.start_of_block
+        start_of_block: @state.start_of_block && result.start_of_block,
+        start_of_output: @state.start_of_output && result.start_of_output
       )
 
       did_write = !result.start_of_block
@@ -205,7 +211,7 @@ module ReportPrint
     # first concatenated into a single string, as in `IO#write`. Meaning no
     # separators or line breaks will be rendered between them.
     def write(*strings, color: nil)
-      if @state.start_of_line
+      if @state.start_of_line && !@state.start_of_output
         unless @state.start_of_block
           @output.write(@state.separator)
         end
@@ -226,12 +232,14 @@ module ReportPrint
         set_state(
           start_of_line: false,
           start_of_block: false,
+          start_of_output: false,
           next_inline_separator: @state.inline_separator
         )
       else
         set_state(
           start_of_block: false,
-          start_of_line: true
+          start_of_line: true,
+          start_of_output: false
         )
       end
     end
@@ -309,13 +317,13 @@ module ReportPrint
       end
     end
 
-    def unless_seen(object)
-      if @seen.include?(object.__id__)
-        write_header(object)
-      else
-        @seen.add(object.__id__)
-        yield
-      end
+    ##
+    # Fetch the options which are set for the class of `object`.
+    #
+    # See Api#report_print_options for more details about the available
+    # options.
+    def options_for(object)
+      @options.options_for(object.class)
     end
 
     private

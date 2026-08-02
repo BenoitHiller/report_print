@@ -23,7 +23,29 @@ gem install report_print
 ```ruby
 require 'report_print'
 
-rp object
+class Example
+  def initialize
+    @foo = { a: [1,2,3] }
+    @bar = Object.new
+  end
+end
+
+rp Example.new
+```
+
+Output:
+
+```text
+Example 0x378
+  @foo = {
+    a: [
+      1,
+      2,
+      3
+    ]
+  }
+  @bar = Object 0x3a8
+end
 ```
 
 See the [full documentation](https://benoithiller.github.io/report_print/) for more details.
